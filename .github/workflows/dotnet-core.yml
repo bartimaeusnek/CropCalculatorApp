@@ -22,9 +22,9 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Publish
-      run: dotnet publish --configuration Release  -o cropcalculatorapp     
+      run: dotnet publish --configuration Release -o cropcalculatorapp     
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
       with:
         name: release
-        path: /home/runner/work/CropCalulatorApp/CropCalulatorApp/*
+        path: /home/runner/work/CropCalulatorApp/*
