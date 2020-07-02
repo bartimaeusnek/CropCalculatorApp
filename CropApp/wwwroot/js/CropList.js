@@ -1,10 +1,10 @@
 ﻿$(document).ready(function () {
-    $("body").tooltip({selector: '[data-toggle=tooltip]'});
+    $("body").tooltip({selector: "[data-toggle=tooltip]"});
 });
 
-$('th').click(function(){
-    const table = $(this).parents('table').eq(0);
-    let rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+$("th").click(function(){
+    const table = $(this).parents("table").eq(0);
+    let rows = table.find("tr:gt(0)").toArray().sort(comparer($(this).index()));
     this.asc = !this.asc
     if (!this.asc){
         rows = rows.reverse()
@@ -20,5 +20,19 @@ function comparer(index) {
     }
 }
 function getCellValue(row, index) {
-    return $(row).children('td').eq(index).text()
+    return $(row).children("td").eq(index).text()
+}
+
+function toCropList(e) {
+    if (e.ctrlKey) {
+        e.preventDefault();
+        $(e.target).href=""
+        const text = $(e.target)
+            .text()
+            .replace(/\n {20}Parent \d:/,"")
+            .replace(/\n\s/,"")
+            .replace(/\n\s/,"")
+            .trim();
+        window.location.href = window.location.href.replace(/crop=(?:.*[^&])/,`crop=${text}`);
+    }
 }

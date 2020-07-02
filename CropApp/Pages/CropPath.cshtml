@@ -3,6 +3,7 @@
 
 @{
     Layout = "_Layout";
+    ViewData["Title"] = "Path";
 }
  <environment include="Development">
 @section Scripts
@@ -30,11 +31,11 @@
             .Replace(" ", "%20");
         <div class="a wrapper-single-box color-crops-wrapper color-crops-wrapper-border">
             <div class="wrapper-double-box">
-                <a data-toggle="tooltip" data-placement="bottom" title="Ignore this crop" class="wrapper-box-left color-crops-wrapper color-crops-wrapper-border" href=@hrefparent1>
+                <a onclick="toCropList(event)" class="wrapper-box-left color-crops-wrapper color-crops-wrapper-border" href=@hrefparent1>
                     Parent 1:
                     @parent1
                 </a>
-                <a data-toggle="tooltip" data-placement="bottom" title="Ignore this crop" class="wrapper-box-right color-crops-wrapper color-crops-wrapper-border" href=@hrefparent2>
+                <a onclick="toCropList(event)" class="wrapper-box-right color-crops-wrapper color-crops-wrapper-border" href=@hrefparent2>
                     Parent 2:
                     @parent2
                 </a>
@@ -49,7 +50,7 @@
     }
     @if (!string.IsNullOrWhiteSpace(ignoredList.First()))
     {
-        @foreach (var ignoredCrop in ignoredList)
+        foreach (var ignoredCrop in ignoredList)
         {
             var newQuery = new List<string>(ignoredList);
             newQuery.Remove(ignoredCrop);
@@ -57,7 +58,7 @@
                 .Aggregate("/CropPath?crop=" + ViewContext.HttpContext.Request.Query["crop"], (current, ignStr) => current + "&ign=" + ignStr)
                 .Replace(" ", "%20");
             <div class="a wrapper-single-box">
-                <a data-toggle="tooltip" data-placement="bottom" title="Unignore this crop" class="wrapper-box-unignore" href=@hrefFilter>
+                <a data-toggle="tooltip" class="wrapper-box-unignore" href=@hrefFilter>
                     @ignoredCrop
                 </a>
             </div>
