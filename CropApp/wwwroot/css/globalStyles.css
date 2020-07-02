@@ -11,6 +11,7 @@
     width: -moz-max-content;    /* Firefox/Gecko */
     width: -webkit-max-content; /* Chrome */
     width: max-content;
+    overflow-x: hidden;
 }
 
 .color-crops{
