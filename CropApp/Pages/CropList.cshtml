@@ -5,12 +5,12 @@
     Layout = "_Layout";
     ViewData["Title"] = "Crop List";
 }
-
+ <environment include="Development">
 @section Scripts
 {
     <script src="~/js/CropList.js"></script>
 }
-
+</environment>
 <div>
     <h1>@ViewData["Title"]</h1>
     <table class="table color-crops table-striped table-bordered table-hover-crops table-responsive table-responsive-y75 max-content">

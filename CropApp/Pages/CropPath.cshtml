@@ -4,12 +4,13 @@
 @{
     Layout = "_Layout";
 }
-
+ <environment include="Development">
 @section Scripts
 {
     <script src="~/js/CropList.js"></script>
     <link rel="stylesheet" href="~/css/gridStyles.css"/>
 }
+</environment>
 @{
         var ignoredList = ViewContext.HttpContext.Request.Query["ign"].ToString().Split(',').ToList();
         var crop = ViewContext.HttpContext.Request.Query["crop"];
