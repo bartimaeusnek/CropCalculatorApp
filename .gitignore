@@ -1,7 +1,7 @@
-﻿/CropCalulator/
-/.idea/
-/.github/
-/CropApp/bin/
+﻿CropCalulator/
+.idea/
+.github/
+CropApp/bin/
 /CropApp/wwwroot/BreedingDict10000.json
 /CropApp/wwwroot/css/site.min.css
 /CropApp/wwwroot/js/site.min.js

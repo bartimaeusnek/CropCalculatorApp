@@ -8,35 +8,35 @@
     <h1>@ViewData["Title"]</h1>
     <p>Angaben gemäß § 5 TMG</p>
     <p>
-        Max Muster <br>
-        Musterweg <br>
-        12345 Musterstadt <br>
+        @Model.Data.tmg5.FirstName @Model.Data.tmg5.SurName<br>
+        @Model.Data.tmg5.Adress <br>
+        @Model.Data.tmg5.PLZ @Model.Data.tmg5.City <br>
     </p>
     <p>
         <strong>Vertreten durch: </strong><br>
-        Max Muster<br>
+        @Model.Data.ByFirstName @Model.Data.BySurName<br>
     </p>
     <p>
         <strong>Kontakt:</strong> <br>
-        Telefon: 01234-789456<br>
-        Fax: 1234-56789<br>
-        E-Mail: <a href="mailto:max@muster.de">max@muster.de</a> <br>
+        Telefon: @Model.Data.contact.FoneAreaCode-@Model.Data.contact.FoneNumber<br>
+        Fax: @Model.Data.contact.FaxAreaCode-@Model.Data.contact.FaxNumber<br>
+        E-Mail: <a href="mailto:@Model.Data.contact.EMail">@Model.Data.contact.EMail</a> <br>
     </p>
     <p>
         <strong>Umsatzsteuer-ID: </strong><br>
-        Umsatzsteuer-Identifikationsnummer gemäß §27a Umsatzsteuergesetz: Musterustid.<br><br>
+        Umsatzsteuer-Identifikationsnummer gemäß §27a Umsatzsteuergesetz: @Model.Data.ids.VAT<br><br>
         <strong>Wirtschafts-ID: </strong><br>
-        Musterwirtschaftsid<br>
+        @Model.Data.ids.Economic<br>
     </p>
     <p>
         <strong>Aufsichtsbehörde:</strong><br>
-        Musteraufsicht Musterstadt<br>
+        @Model.Data.Conservancy<br>
     </p>
     <p>
         <strong>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:</strong><br>
-        Max Muster <br>
-        Musterweg<br>
-        12345 Musterstadt <br>
+        @Model.Data.rStV.FirstName @Model.Data.rStV.SurName<br>
+        @Model.Data.rStV.Adress <br>
+        @Model.Data.rStV.PLZ @Model.Data.rStV.City <br>
     </p>
     <p>
         <strong>Haftungsausschluss: </strong><br><br>
