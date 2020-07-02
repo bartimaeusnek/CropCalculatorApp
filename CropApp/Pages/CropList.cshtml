@@ -1,0 +1,115 @@
+﻿@page "{id:int=-1}/{descending:bool=false}"
+@model CropApp.Pages.CropListModel
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Crop List";
+}
+
+@section Scripts
+{
+    <script src="~/js/CropList.js"></script>
+}
+
+<div>
+    <h1>@ViewData["Title"]</h1>
+    <table class="table color-crops table-striped table-bordered table-hover-crops table-responsive table-responsive-y75 max-content">
+        <caption>List of Crops</caption>
+        <thead>
+        <tr>
+            <th>
+                <div>
+                    Name
+                </div>
+            </th>
+            <th>
+                <div>
+                    Tier
+                </div>
+            </th>
+            <th>
+                <div>
+                    Stats.Chemical
+                </div>
+            </th>
+            <th>
+                <div>
+                    Stats.Food
+                </div>
+            </th>
+            <th>
+                <div>
+                    Stats.Defensive
+                </div>
+            </th>
+            <th>
+                <div>
+                    Stats.Color
+                </div>
+            </th>
+            <th>
+                <div>
+                    Stats.Weed
+                </div>
+            </th>
+            <th>
+                <div>
+                    Attributes
+                </div>
+            </th>
+            <th>
+                <div>
+                    Breedable
+                </div>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var crop in Model.Crops)
+        {
+            var breedable = !crop.mod;
+            var css = crop.mod ? "disabled" : "";
+                <tr>
+                    <td data-toggle="tooltip" data-placement="top" title="Name" class=@css>
+                        @if (breedable)
+                        {
+                            <a data-toggle="tooltip" data-placement="bottom" title="How to get this crop" class="color-crops" asp-page="/CropPath" asp-route-crop=@crop.name>@crop.name</a>
+                        }
+                        else
+                        {
+                            @crop.name
+                        }
+                    </td>
+                <td data-toggle="tooltip" data-placement="top" title="Tier" class=@css>
+                    @crop.tier
+                </td>
+                <td data-toggle="tooltip" data-placement="top" title="Stats.Chemical" class=@css>
+                    @crop.stats.che
+                </td>
+                <td data-toggle="tooltip" data-placement="top" title="Stats.Food" class=@css>
+                    @crop.stats.foo
+                </td>
+                <td data-toggle="tooltip" data-placement="top" title="Stats.Defensive" class=@css>
+                    @crop.stats.def
+                </td>
+                <td data-toggle="tooltip" data-placement="top" title="Stats.Color" class=@css>
+                    @crop.stats.col
+                </td>
+                <td data-toggle="tooltip" data-placement="top" title="Stats.Weed" class=@css>
+                    @crop.stats.wee
+                </td>
+                <td data-toggle="tooltip" data-placement="top" title="Attributes" class=@css>
+                    @{
+                        var strr = crop.attributes.Aggregate("", (current, str) => current + str + ", ");
+                        strr = strr.Substring(0, strr.Length - 2);
+                    }
+                    @strr
+                </td>
+                <td data-toggle="tooltip" data-placement="top" title="Breedable" class=@css>
+                    @breedable
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

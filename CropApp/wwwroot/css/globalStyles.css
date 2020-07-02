@@ -1,0 +1,50 @@
+﻿.table-responsive-y75{
+    height: 75vh;
+}
+
+.table-responsive-y60{
+    height: 60vh;
+}
+/*noinspection ALL*/
+.max-content{
+    width: intrinsic;           /* Safari/WebKit verwendet einen nicht standardisierten Namen */
+    width: -moz-max-content;    /* Firefox/Gecko */
+    width: -webkit-max-content; /* Chrome */
+    width: max-content;
+}
+
+.color-crops{
+    color: #33a731;
+    background-color:#343a40;
+}
+
+.floatleft{
+    float: left;
+}
+
+.topmargin7vh{
+    margin-top: 7vh;
+}
+
+.leftmargin{
+    margin-left: 2vh;
+}
+
+.color-crops > option{
+    color: #33a731;
+    background-color:#343a40;
+}
+.color-crops > option[disabled = "disabled"] {
+    color: #ac1b1b;
+    background-color:#343a40;
+}
+
+.disabled{
+    color: #ac1b1b;
+    background-color:#343a40;
+}
+
+.table-hover-crops tbody tr:hover {
+    color: #48e845;
+    background-color: rgba(255, 255, 255, 0.075);
+}

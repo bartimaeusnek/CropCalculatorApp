@@ -1,0 +1,96 @@
+﻿@page
+
+@using CropApp.Backend
+@model CropApp.Pages.CropCalculationModel
+
+@{
+    Layout = "_Layout";
+}
+
+@section Scripts
+{
+    <script src="~/js/CropList.js"></script>
+}
+
+<body>
+<div class="topmargin7vh">
+    @{
+        // ReSharper disable ReplaceWithSingleCallToAny
+        // ReSharper disable PossibleNullReferenceException
+        List<SelectListItem> selectlist = CropCalculation.AllCrops.Select(breedingDictKey => new SelectListItem(breedingDictKey.name, breedingDictKey.name)).OrderBy(x => x.Text).ToList();
+        List<SelectListItem> selectlist2 = CropCalculation.AllCrops.Select(breedingDictKey => new SelectListItem(breedingDictKey.name, breedingDictKey.name)).OrderBy(x => x.Text).ToList();
+        var crop1 = string.IsNullOrWhiteSpace(HttpContext.Request.Query["cropA"].ToString()) ? "reed" : HttpContext.Request.Query["cropA"].ToString();
+        var crop2 = string.IsNullOrWhiteSpace(HttpContext.Request.Query["cropB"].ToString()) ? "reed" : HttpContext.Request.Query["cropB"].ToString();
+        
+        selectlist.Find(x => x.Text == crop1).Selected = true;
+        selectlist2.Find(x => x.Text == crop2).Selected = true;
+        
+        selectlist.FindAll(x =>
+                               CropCalculation.AllCrops.
+                                               Where(y => y.name == x.Text)
+                                              .Where(z => z.mod)
+                                              .Any()
+            ).ForEach(
+                      x => x.Disabled = true
+        );
+        selectlist2.FindAll(x => 
+                               CropCalculation.AllCrops
+                                              .Where(y => y.name == x.Text)
+                                              .Where(z => z.mod)
+                                              .Any()
+            ).ForEach(
+                      x => x.Disabled = true
+        );
+        var dropdownclasses = "form-control max-content color-crops";
+    }
+    <div class="floatleft topmargin7vh">
+        <form method="get">
+
+            @Html.DropDownList("CropA", selectlist, new {@class = dropdownclasses})
+            <br>
+            @Html.DropDownList("CropB", selectlist, new {@class = dropdownclasses})
+            <br>
+            <input class="btn btn-success" type="submit">
+            <br>
+        </form>
+    </div>
+    <br>
+    <div class="floatleft leftmargin">
+        @if (Model.BreedingDict != null)
+        {
+            <br>
+            <table class="table color-crops table-striped table-bordered table-hover-crops table-responsive table-responsive-y60 max-content">
+                <caption>Crossbreeds</caption>
+                <thead>
+                <tr>
+                <th>
+                    <div>
+                        Name
+                    </div>
+                </th>
+                <th>
+                    <div>
+                        Chance
+                    </div>
+                </th>
+                </thead>
+                <tbody>
+                @foreach (var listentry in Model.BreedingDict)
+                {
+                    <tr>
+                        <td data-toggle="tooltip" data-placement="top" title="Name">
+                            @listentry.Item1
+                        </td>
+                        <td data-toggle="tooltip" data-placement="top" title="Chanche">
+                            @{ var percentage = listentry.Item2.ToString("P"); }
+                            @percentage
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            <br>
+        }
+    </div>
+</div>
+</body>

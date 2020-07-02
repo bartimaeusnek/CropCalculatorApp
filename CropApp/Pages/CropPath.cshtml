@@ -1,0 +1,66 @@
+﻿@page
+@model CropApp.Pages.CropPathModel
+
+@{
+    Layout = "_Layout";
+}
+
+@section Scripts
+{
+    <script src="~/js/CropList.js"></script>
+    <link rel="stylesheet" href="~/css/gridStyles.css"/>
+}
+@{
+        var ignoredList = ViewContext.HttpContext.Request.Query["ign"].ToString().Split(',').ToList();
+        var crop = ViewContext.HttpContext.Request.Query["crop"];
+    }
+<body>
+<h1>@crop</h1>
+<div class="wrapper">
+    @foreach (var (parent1, parent2, chance) in Model.Crops)
+    {
+        var newQuery1 = new List<string>(ignoredList) {parent1};
+        var hrefparent1 = newQuery1
+            .Aggregate("/CropPath?crop=" + crop, (current, ignStr) => current + "&ign=" + ignStr)
+            .Replace(" ", "%20");
+        var newQuery2 = new List<string>(ignoredList) {parent2};
+        var hrefparent2 = newQuery2
+            .Aggregate("/CropPath?crop=" + crop, (current, ignStr) => current + "&ign=" + ignStr)
+            .Replace(" ", "%20");
+        <div class="a wrapper-single-box color-crops-wrapper color-crops-wrapper-border">
+            <div class="wrapper-double-box">
+                <a data-toggle="tooltip" data-placement="bottom" title="Ignore this crop" class="wrapper-box-left color-crops-wrapper color-crops-wrapper-border" href=@hrefparent1>
+                    Parent 1:
+                    @parent1
+                </a>
+                <a data-toggle="tooltip" data-placement="bottom" title="Ignore this crop" class="wrapper-box-right color-crops-wrapper color-crops-wrapper-border" href=@hrefparent2>
+                    Parent 2:
+                    @parent2
+                </a>
+            </div>
+            <div class="wrapper-single-box">
+                <div class="wrapper-box-left color-crops-wrapper color-crops-wrapper-border">
+                    Chance:
+                    @chance.ToString("P")
+                </div>
+            </div>
+        </div>
+    }
+    @if (!string.IsNullOrWhiteSpace(ignoredList.First()))
+    {
+        @foreach (var ignoredCrop in ignoredList)
+        {
+            var newQuery = new List<string>(ignoredList);
+            newQuery.Remove(ignoredCrop);
+            var hrefFilter = newQuery
+                .Aggregate("/CropPath?crop=" + ViewContext.HttpContext.Request.Query["crop"], (current, ignStr) => current + "&ign=" + ignStr)
+                .Replace(" ", "%20");
+            <div class="a wrapper-single-box">
+                <a data-toggle="tooltip" data-placement="bottom" title="Unignore this crop" class="wrapper-box-unignore" href=@hrefFilter>
+                    @ignoredCrop
+                </a>
+            </div>
+        }
+    }
+</div>
+</body>
