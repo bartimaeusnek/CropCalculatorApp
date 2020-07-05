@@ -12,28 +12,26 @@ namespace CropApp.Backend
 {
     public static class CropCalculation
     {
-        private const int             Precision = 100000;
-        public static List<CropModel> AllCrops  = new List<CropModel>();
+        public static IList<CropModel> AllCrops  = new List<CropModel>();
 
         public static Dictionary<(string, string), List<(string, double)>> BreedingDict =
             new Dictionary<(string, string), List<(string, double)>>();
 
-        private static readonly ConcurrentDictionary<long, ConcurrentBag<int>> Breeding =
+        internal static readonly ConcurrentDictionary<long, ConcurrentBag<int>> Breeding =
             new ConcurrentDictionary<long, ConcurrentBag<int>>();
 
-        private static readonly Dictionary<long, int> RatioZmapping = new Dictionary<long, int>();
+        internal static Dictionary<long, int> RatioZmapping = new Dictionary<long, int>();
+        internal static Dictionary<long, (int, int[])> RatioXmapping = new Dictionary<long, (int, int[])>();
 
-        private static XorShiftRandom _xstr = new XorShiftRandom();
-        
-        private static int[] ratios = new int[AllCrops.Count * AllCrops.Count];
-        
         public static async Task ProcessBreeding()
         {
             if (await TryLoadCropJsonAsync())
                 return;
 
-            PrecalculateRatios();
+            RatioZmapping = PrecalculateRatios();
             Console.WriteLine("precalulated ratios");
+
+            RatioXmapping = PrecalculateRatioListForCrops();
             
             ParallelProcessCrops();
             Console.WriteLine("done with Parallel processing");
@@ -44,7 +42,7 @@ namespace CropApp.Backend
             await WriteCropJsonToDisk();
         }
 
-        private static async Task WriteCropJsonToDisk()
+        internal static async Task WriteCropJsonToDisk()
         {
             await using var streamWriter = new StreamWriter("wwwroot/BreedingDict.json");
             await streamWriter.WriteAsync(JsonConvert.SerializeObject(BreedingDict));
@@ -52,23 +50,37 @@ namespace CropApp.Backend
             streamWriter.Close();
         }
         
-        private static void PrecalculateRatios()
+        internal static Dictionary<long, int> PrecalculateRatios()
         {
-            var counter = 0;
-
+            var dict = new Dictionary<long, int>();
             foreach (var cropA in AllCrops)
             {
                 foreach (var cropB in AllCrops)
                 {
-                    ratios[counter] = CalculateRatioFor(cropA, cropB);
                     var id = cropA.GetCropIDsFromModels(cropB);
-                    RatioZmapping[id] = counter;
-                    ++counter;
+                    dict[id] = CalculateRatioFor(cropA, cropB);
                 }
             }
+
+            return dict;
+        }
+
+        internal static Dictionary<long, (int, int[])> PrecalculateRatioListForCrops()
+        {
+            var dict = new Dictionary<long, (int, int[])>();
+            foreach (var cropA in AllCrops)
+            {
+                foreach (var cropB in AllCrops)
+                {
+                    var id = cropA.GetCropIDsFromModels(cropB);
+                    dict[id] = GetRatioListForCrops(new[] {cropA.interalID, cropB.interalID});
+                }
+            }
+
+            return dict;
         }
         
-        private static async Task<bool> TryLoadCropJsonAsync()
+        internal static async Task<bool> TryLoadCropJsonAsync()
         {
             var fi = new FileInfo("wwwroot/BreedingDict.json");
             if (!fi.Exists)
@@ -80,41 +92,25 @@ namespace CropApp.Backend
             return true;
         }
         
-        private static void ParallelProcessCrops()
+        internal static void ParallelProcessCrops()
         {
-              Parallel.ForEach(AllCrops,
-                             new ParallelOptions {MaxDegreeOfParallelism = 2},
-                             cropA =>
-                             {
-                                 if (cropA.mod)
-                                     return;
-                                 Parallel.ForEach(AllCrops,
-                                                  new ParallelOptions {MaxDegreeOfParallelism = 2},
-                                                  cropB =>
-                                                  {
-                                                      if (cropB.mod)
-                                                          return;
-                                                      var id = cropA.GetCropIDsFromModels(cropB);
-                                                      Breeding.TryAdd(id, new ConcurrentBag<int>());
-                                                      Span<int> span = stackalloc int[Precision];
-                                                      //Console.WriteLine(@$"get crossing chance over an average of 10k for {cropA.name} &{cropB.name}");
-                                                      for (var i = 0; i < Precision; i++)
-                                                          span[i] =
-                                                              AttemptCrossing(ratios,
-                                                                              new[] {cropA.interalID, cropB.interalID})
-                                                                 .interalID;
-                                                      //Breeding[id].Add(AttemptCrossing(cropA, cropB).interalID);
+            foreach (var cropA in AllCrops)
+            {
+                if (cropA.mod)
+                    continue;
+                foreach (var cropB in AllCrops)
+                {
+                    if (cropB.mod)
+                        continue;
+                    Console.WriteLine($"Crossing {cropA.name} with {cropB.name}");
+                    var id = cropA.GetCropIDsFromModels(cropB);
 
-                                                      //Console.WriteLine("Writings chanches to Array");
-                                                      foreach (var i in span) Breeding[id].Add(i);
-
-                                                      //Console.WriteLine("done with this task");
-                                                  });
-                             });
+                    Breeding.TryAdd(id, new ConcurrentBag<int>(AttemptCrossing(RatioXmapping[id])));
+                }
+            }
         }
         
-        
-        private static void SortDictionary()
+        internal static void SortDictionary()
         {
             foreach (KeyValuePair<long, ConcurrentBag<int>> kvp in Breeding.AsEnumerable()!
                .OrderBy(k => k.Key))
@@ -131,42 +127,55 @@ namespace CropApp.Backend
                 BreedingDict.Add(kvp.Key.GetCropNamesFromLong(), q.Select(x => (x.Key, x.Value)).ToList());
             }
         }
-        
-        private static CropModel AttemptCrossing(Span<int> ratioz, IReadOnlyCollection<int> cropIds)
+
+        internal static (int, int[]) GetRatioListForCrops(IReadOnlyCollection<int> cropIds)
         {
             if (cropIds.Count > 4 || cropIds.Count < 2)
-                return null;
+                return (-1,null);
 
             Span<int> ratios = stackalloc int[AllCrops.Count];
             var       total  = 0;
             for (var index = 0; index < AllCrops.Count; index++)
             {
                 foreach (var te in cropIds)
-                    total += ratioz[RatioZmapping[((long) index << 24) | (long) te]];
+                    total += RatioZmapping[((long) index << 24) | (long) te];
 
                 ratios[index] = total;
             }
 
             if (total == 0)
-                return null;
+                return (-1,null);
+            
+            return (total, ratios.ToArray());
+        }
 
-            var search = Math.Abs(_xstr.NextInt32()) % total;
-            var min    = 0;
-            var max    = ratios.Length - 1;
+        internal static int[] AttemptCrossing((int total, int[] ratios) ratioList)
+        {
+            Span<int> ret = stackalloc int[ratioList.total-1];
+            for (int i = 0; i < ratioList.total-1; i++)
+                ret[i] = BinarySearchArray(i, ratioList.ratios);
+            
+            return ret.ToArray();
+        }
+
+        internal static int BinarySearchArray(int search, int[] array)
+        {
+            var min    =  0;
+            var max= array.Length - 1;
             
             while (min < max)
             {
                 var cur = (min + max) / 2;
-                if (search < ratios[cur])
+                if (search < array[cur])
                     max = cur;
                 else
                     min = cur + 1;
             }
 
-            return AllCrops[min];
+            return min;
         }
-
-        private static int CalculateRatioFor(CropModel a, CropModel b)
+        
+        internal static int CalculateRatioFor(CropModel a, CropModel b)
         {
             if (a == b)
                 return 500;

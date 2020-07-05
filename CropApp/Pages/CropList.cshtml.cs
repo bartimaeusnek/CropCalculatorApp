@@ -10,7 +10,7 @@ namespace CropApp.Pages
     [SuppressMessage("ReSharper", "UnusedMember.Global"), SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     public class CropListModel : PageModel
     {
-        [BindProperty(SupportsGet = true)] public List<CropModel> Crops { get; private set; }
+        [BindProperty(SupportsGet = true)] public IList<CropModel> Crops { get; private set; }
 
         public void OnGet()
         {
