@@ -24,20 +24,36 @@ namespace CropApp.Backend
         private static readonly Dictionary<long, int> RatioZmapping = new Dictionary<long, int>();
 
         private static XorShiftRandom _xstr = new XorShiftRandom();
-
+        
+        private static int[] ratios = new int[AllCrops.Count * AllCrops.Count];
+        
         public static async Task ProcessBreeding()
         {
-            var fi = new FileInfo("wwwroot/BreedingDict.json");
-            if (fi.Exists)
-            {
-                using var r    = fi.OpenText();
-                var       json = await r.ReadToEndAsync();
-                BreedingDict =
-                    JsonConvert.DeserializeObject<Dictionary<(string, string), List<(string, double)>>>(json);
+            if (await TryLoadCropJsonAsync())
                 return;
-            }
 
-            var ratios  = new int[AllCrops.Count * AllCrops.Count];
+            PrecalculateRatios();
+            Console.WriteLine("precalulated ratios");
+            
+            ParallelProcessCrops();
+            Console.WriteLine("done with Parallel processing");
+
+            Console.WriteLine("Sort Directory");
+            SortDictionary();
+            Console.WriteLine("Done sorting Directory");
+            await WriteCropJsonToDisk();
+        }
+
+        private static async Task WriteCropJsonToDisk()
+        {
+            await using var streamWriter = new StreamWriter("wwwroot/BreedingDict.json");
+            await streamWriter.WriteAsync(JsonConvert.SerializeObject(BreedingDict));
+            await streamWriter.FlushAsync();
+            streamWriter.Close();
+        }
+        
+        private static void PrecalculateRatios()
+        {
             var counter = 0;
 
             foreach (var cropA in AllCrops)
@@ -50,10 +66,23 @@ namespace CropApp.Backend
                     ++counter;
                 }
             }
-
-            Console.WriteLine("precalulated ratios");
-
-            Parallel.ForEach(AllCrops,
+        }
+        
+        private static async Task<bool> TryLoadCropJsonAsync()
+        {
+            var fi = new FileInfo("wwwroot/BreedingDict.json");
+            if (!fi.Exists)
+                return false;
+            
+            using var r    = fi.OpenText();
+            var       json = await r.ReadToEndAsync();
+            BreedingDict = JsonConvert.DeserializeObject<Dictionary<(string, string), List<(string, double)>>>(json);
+            return true;
+        }
+        
+        private static void ParallelProcessCrops()
+        {
+              Parallel.ForEach(AllCrops,
                              new ParallelOptions {MaxDegreeOfParallelism = 2},
                              cropA =>
                              {
@@ -82,10 +111,11 @@ namespace CropApp.Backend
                                                       //Console.WriteLine("done with this task");
                                                   });
                              });
-
-            Console.WriteLine("done with Parallel processing");
-
-            Console.WriteLine("Sort Directory");
+        }
+        
+        
+        private static void SortDictionary()
+        {
             foreach (KeyValuePair<long, ConcurrentBag<int>> kvp in Breeding.AsEnumerable()!
                .OrderBy(k => k.Key))
             {
@@ -100,15 +130,8 @@ namespace CropApp.Backend
 
                 BreedingDict.Add(kvp.Key.GetCropNamesFromLong(), q.Select(x => (x.Key, x.Value)).ToList());
             }
-
-            Console.WriteLine("Done sorting Directory");
-
-            await using var streamWriter = new StreamWriter("wwwroot/BreedingDict.json");
-            await streamWriter.WriteAsync(JsonConvert.SerializeObject(BreedingDict));
-            streamWriter.Flush();
-            streamWriter.Close();
         }
-
+        
         private static CropModel AttemptCrossing(Span<int> ratioz, IReadOnlyCollection<int> cropIds)
         {
             if (cropIds.Count > 4 || cropIds.Count < 2)

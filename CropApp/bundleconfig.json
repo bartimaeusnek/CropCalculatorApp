@@ -5,7 +5,12 @@
       "wwwroot/css/site.css",
       "wwwroot/css/globalStyles.css",
       "wwwroot/css/gridStyles.css"
-    ]
+    ],
+    "minify": {
+      "enabled": true,
+      "colorNames": "hex",
+      "adjustRelativePaths": true
+    }
   },
   {
     "outputFileName": "wwwroot/js/site.min.js",
@@ -15,8 +20,23 @@
     ],
     "minify": {
       "enabled": true,
-      "renameLocals": true
+      "renameLocals": true,
+      "alwaysEscapeNonAscii": true,
+      "termSemicolons": false
     },
-    "sourceMap": false
+    "sourceMap": true
+  },
+  {
+    "outputFileName": "wwwroot/js/CropPath.min.js",
+    "inputFiles": [
+      "wwwroot/js/CropPath.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true,
+      "alwaysEscapeNonAscii": true,
+      "termSemicolons": false
+    },
+    "sourceMap": true
   }
 ]

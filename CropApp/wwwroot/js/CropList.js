@@ -22,17 +22,3 @@ function comparer(index) {
 function getCellValue(row, index) {
     return $(row).children("td").eq(index).text()
 }
-
-function toCropList(e) {
-    if (e.ctrlKey) {
-        e.preventDefault();
-        $(e.target).href=""
-        const text = $(e.target)
-            .text()
-            .replace(/\n {20}Parent \d:/,"")
-            .replace(/\n\s/,"")
-            .replace(/\n\s/,"")
-            .trim();
-        window.location.href = window.location.href.replace(/crop=(?:.*[^&])/,`crop=${text}`);
-    }
-}

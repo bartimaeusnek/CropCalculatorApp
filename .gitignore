@@ -5,5 +5,7 @@ CropApp/bin/
 CropApp/obj/
 Debug/
 /CropApp/wwwroot/BreedingDict10000.json
-/CropApp/wwwroot/css/site.min.css
-/CropApp/wwwroot/js/site.min.js
+*.min.js
+*.min.js.map
+*.min.css
+*.min.css.map
